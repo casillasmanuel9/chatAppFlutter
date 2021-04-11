@@ -4,6 +4,10 @@ import 'package:chatapp/widgets/labels.dart';
 import 'package:chatapp/widgets/logo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../helpers/mostrar_alerta.dart';
+import '../services/auth_service.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({Key key}) : super(key: key);
@@ -54,6 +58,8 @@ class __FormState extends State<_Form> {
   final passCrtl = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 50),
       child: Column(
@@ -78,11 +84,19 @@ class __FormState extends State<_Form> {
             textController: passCrtl,
           ),
           BotonAzul(
-            onPressed: () {
-              print(emailCrtl.text);
-              print(passCrtl.text);
-            },
-            text: "Ingrese",
+            onPressed: authService.autenticando
+                ? null
+                : () async {
+                    FocusScope.of(context).unfocus();
+                    final registerOk = await authService.register(
+                        userCrtl.text, emailCrtl.text, passCrtl.text);
+                    if (registerOk == true) {
+                      Navigator.pushReplacementNamed(context, "usuarios");
+                    } else {
+                      mostarAlerta(context, "Registro incorrecto", registerOk);
+                    }
+                  },
+            text: "Crear Cuenta",
           )
           //Creat boton
         ],

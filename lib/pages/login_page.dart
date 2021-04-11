@@ -1,9 +1,12 @@
+import 'package:chatapp/helpers/mostrar_alerta.dart';
+import 'package:chatapp/services/auth_service.dart';
 import 'package:chatapp/widgets/boton_azul.dart';
 import 'package:chatapp/widgets/custom_input.dart';
 import 'package:chatapp/widgets/labels.dart';
 import 'package:chatapp/widgets/logo.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key key}) : super(key: key);
@@ -51,6 +54,8 @@ class __FormState extends State<_Form> {
   final passCrtl = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 50),
       child: Column(
@@ -69,10 +74,20 @@ class __FormState extends State<_Form> {
             textController: passCrtl,
           ),
           BotonAzul(
-            onPressed: () {
-              print(emailCrtl.text);
-              print(passCrtl.text);
-            },
+            onPressed: authService.autenticando
+                ? null
+                : () async {
+                    FocusScope.of(context).unfocus();
+                    final loginOk =
+                        await authService.login(emailCrtl.text, passCrtl.text);
+                    if (loginOk) {
+                      // TODO conectar al socket server
+                      Navigator.pushReplacementNamed(context, "usuarios");
+                    } else {
+                      mostarAlerta(context, "Login Incorrecto",
+                          "Revise sus credenciales nuevamente");
+                    }
+                  },
             text: "Ingrese",
           )
           //Creat boton
